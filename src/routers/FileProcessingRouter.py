@@ -53,21 +53,44 @@ async def process_excel_file(file_id, workbook):
     after_list = []
 
     for sheet in workbook.worksheets:
+        if sheet.max_row < 2:
+            continue
+
         before_index = None
         after_index = None
-        for row in sheet.iter_rows(values_only=True):
-            if before_index is None and after_index is None:
-                if row and "before" in row and "after" in row:
-                    before_index = row.index("before")
-                    after_index = row.index("after")
-                    continue
+        first_row = next(sheet.iter_rows(values_only=True))
 
+        # определяем индексы колонок before и after учитывая что перед ними
+        # не должно быть колонок с пустым заголовком
+        for index, cell in enumerate(first_row):
+            if cell is not None:
+                if cell == "before":
+                    before_index = index
+                if cell == "after":
+                    after_index = index
+            else:
+                break
+
+        is_complete_before = False
+        is_complete_after = False
+        for row in sheet.iter_rows(min_row=2, values_only=True):
             if before_index is not None and after_index is not None:
-                if row:
-                    if len(row) > before_index and row[before_index] is not None:
+                if len(row) > before_index and not is_complete_before:
+                    # при первом пустом значении в колонке она больше не обрабатывается
+                    if row[before_index] is not None:
                         before_list.append(row[before_index])
-                    if len(row) > after_index and row[after_index] is not None:
+                    else:
+                        is_complete_before = True
+                if len(row) > after_index and not is_complete_after:
+                    # при первом пустом значении в колонке она больше не обрабатывается
+                    if row[after_index] is not None:
                         after_list.append(row[after_index])
+                    else:
+                        is_complete_after = True
+
+        # если колонки before и after найдены на листе, остальные листы не обрабатываются
+        if before_index is not None and after_index is not None:
+            break
 
     if before_list and after_list:
         set_before = set(before_list)
