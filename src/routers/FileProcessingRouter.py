@@ -31,10 +31,10 @@ async def upload_file(
         contents = await file.read()
         workbook = openpyxl.load_workbook(BytesIO(contents))
         asyncio.create_task(process_excel_file(file_id, workbook))
-        return {"file_id": file_id, "status": file_statuses[file_id]}
+        return {"file_id": file_id}
     except Exception as e:
         file_statuses[file_id].status = "error"
-        return {"file_id": file_id, "status": file_statuses[file_id]}
+        return {"file_id": file_id}
 
 
 @router.get("/get_processing_status")

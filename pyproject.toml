@@ -13,6 +13,8 @@ pydantic = "^2.10.3"
 pydantic-settings = "^2.6.1"
 pyjwt = "^2.10.1"
 gunicorn = "^23.0.0"
+openpyxl = "^3.1.5"
+python-multipart = "^0.0.19"
 
 
 [build-system]
